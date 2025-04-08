@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+
+
+{% block content %}
+
+    <h2>{{ user.username }}'s Family Tree</h2>
+    {% if tree %}
+        <p><strong>Spouse:</strong> {{ tree.spouse.name }}</p>
+
+        <h3>Parents</h3>
+        <ul>
+            {% for p in tree.parents %}
+                <li>{{ p.name }}</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Siblings</h3>
+        <ul>
+            {% for s in tree.siblings %}
+                <li>{{ s.name }}</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Children</h3>
+        <ul>
+            {% for c in tree.children %}
+                <li>{{ c.name }}</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Grandparents</h3>
+        <ul>
+            {% for g in tree.grandparents %}
+                <li>{{ g.name }}</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Aunts & Uncles</h3>
+        <ul>
+            {% for a in tree.aunts_uncles %}
+                <li>{{ a.name }}</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Cousins</h3>
+        <ul>
+            {% for cu in tree.cousins %}
+                <li>{{ cu.name }}</li>
+            {% endfor %}
+        </ul>
+        <button onclick="window.print()">Print Family Tree</button>
+    {% else %}
+        <p>no family tree</p>
+        <a class="btn btn-success" href="{% url 'familyTree:family_member_create' %}">Add New Family Member</a>
+    {% endif %}
+
+
+
+
+
+
+{% endblock %}

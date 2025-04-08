@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+    <div class="d-flex justify-content-evenly">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Profile</h5>
+                <h6 class="card-subtitle mb-2 text-body-secondary">Personal information</h6>
+                <p class="card-text">
+                    {% if profile %}
+                        Username: {{ user.username }}<br>
+                        Full Name: {{ user.get_full_name }}<br>
+                        Birth Date: {{ profile.date_of_birth }}<br>
+                        Email: {{ user.email }}<br>
+                        Bio: {{ profile.bio }}<br>
+
+                        <button class="btn btn-primary text-bg-secondary">
+                    <span class="badge">
+                        <a class="stretched-link" href="{% url 'accounts:profile-edit' profile.id %}">Edit Profile</a>
+                    </span>
+                        </button>
+                    {% else %}
+                        <a href="#">Add profile details</a>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Contact Information</h5>
+                <h6 class="card-subtitle mb-2 text-body-secondary">Current information</h6>
+                <p class="card-text">
+                    {% if contact %}
+                        Phone #: {{ contact.phone_number }}<br>
+                        <h4>
+                    <span class="badge text-bg-secondary">
+                        <a href="{% url 'accounts:contact-edit' contact.id %}">Edit Contact</a>
+                    </span></h4>
+                    {% else %}
+                        <a>Add Contact info</a>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Address</h5>
+                <h6 class="card-subtitle mb-2 text-body-secondary">Location</h6>
+                <p class="card-text">
+                    {% if address %}
+                        Street: {{ address.street_address }}<br>
+                        City: {{ address.city }}<br>
+                        State: {{ address.state }}<br>
+                        Postal Code: {{ address_set.postal_code }}<br>
+                        Country: {{ address.country }}<br>
+                        <h4>
+                    <span class="badge text-bg-secondary">
+                        <a href="{% url 'accounts:address-edit' address.id %}">Edit Address</a>
+                    </span>
+                        </h4>
+                    {% else %}
+                        <a>Add Address info</a>
+                    {% endif %}
+
+
+                </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

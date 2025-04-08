@@ -1,0 +1,73 @@
+{% block content %}
+    <li>
+        {% if member.member %}
+            {{ member.member.name }} (Born: {{ member.member.birth_date }})
+
+            {% if member.member.pk %}
+                <a href="{% url 'familyTree:family_member_update' member.member.pk %}">Edit</a> |
+                <a href="{% url 'familyTree:family_member_delete' member.member.pk %}">Delete</a>
+            {% endif %}
+
+            {% if member.parents %}
+                <ul>
+                    <li>Parents:
+                        <ul>
+                            {% for parent in member.parents %}
+                                {% include 'tree/family_member_node.html' with member=parent %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+            {% endif %}
+
+            {% if member.siblings %}
+                <ul>
+                    <li>Siblings:
+                        <ul>
+                            {% for sibling in member.siblings %}
+                                {% include 'tree/family_member_node.html' with member=sibling %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+            {% endif %}
+
+            {% if member.children %}
+                <ul>
+                    <li>Children:
+                        <ul>
+                            {% for child in member.children %}
+                                {% include 'tree/family_member_node.html' with member=child %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+            {% endif %}
+
+            {% if member.aunts_uncles %}
+                <ul>
+                    <li>Aunts & Uncles:
+                        <ul>
+                            {% for au in member.aunts_uncles %}
+                                {% include 'tree/family_member_node.html' with member=au %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+            {% endif %}
+
+            {% if member.cousins %}
+                <ul>
+                    <li>Cousins:
+                        <ul>
+                            {% for cousin in member.cousins %}
+                                {% include 'tree/family_member_node.html' with member=cousin %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+            {% endif %}
+        {% endif %}
+    </li>
+
+{% endblock %}
