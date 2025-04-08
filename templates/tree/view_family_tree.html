@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-6">
+            <h2>{{ tree.name }}</h2>
+            <a href="{% url 'familyTree:add_person' tree.id %}">Add Person</a> |
+            <a href="{% url 'familyTree:add_relationship' tree.id %}">Add Relationship</a>
+
+            <h3>People</h3>
+            <ul>
+                {% for person in tree.members.all %}
+                    <li>{{ person.first_name }} {{ person.last_name }} ({{ person.gender }})</li>
+                {% empty %}
+                    <li>No people</li>
+                {% endfor %}
+            </ul>
+
+            <h3>Relationships</h3>
+            <ul>
+                {% for rel in tree.relationships.all %}
+                    <li>{{ rel.from_person }} → {{ rel.relationship_type.name }} → {{ rel.to_person }}</li>
+                {% empty %}
+                    <li>No relationships</li>
+                {% endfor %}
+            </ul>
+            <input type="button" onclick="printDiv('dTree')" value="Print tree">
+
+        </div>
+        <div class="col-6" id="dTree">
+            <div id="tree-container" style="width:100%; height:auto;"></div>
+        </div>
+    </div>
+
+
+    <script>
+        const chart_config = {
+            chart: {
+                container: "#tree-container",
+                rootOrientation: "NORTH", // You can try WEST, EAST, etc.
+
+                connectors: {
+                    type: "bCurve",
+                },
+                node: {
+                    HTMLclass: "nodeExample1",
+                    collapsable: "true"
+                }
+            },
+            nodeStructure: {{ tree_data|safe }}
+        };
+
+        new Treant(chart_config);
+
+
+        function printDiv(divId) {
+            var printContents = document.getElementById(divId).innerHTML;
+            var originalContents = document.body.innerHTML;
+
+            document.body.innerHTML = printContents;
+
+            window.print();
+
+            document.body.innerHTML = originalContents;
+        }
+    </script>
+
+    <style type="text/css">
+        .nodeExample1 {
+            border: 1px solid #ccc;
+            padding: 5px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+            text-align: center;
+        }
+
+        .marriageNode {
+            width: 2px;
+            height: 20px;
+            background: transparent;
+            margin: 0 auto;
+        }
+
+    </style>
+
+{% endblock %}

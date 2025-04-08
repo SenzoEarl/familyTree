@@ -1,18 +1,27 @@
 from django import forms
-from .models import FamilyMember
+from .models import Person, PersonRelationship, FamilyTree
 
-class FamilyMemberForm(forms.ModelForm):
+
+class FamilyTreeForm(forms.ModelForm):
     class Meta:
-        model = FamilyMember
-        fields = ['name', 'gender', 'birth_date', 'death_date', 'father', 'mother']
+        model = FamilyTree
+        fields = ['name']
 
-    def clean(self):
-        cleaned_data = super().clean()
-        father = cleaned_data.get('father')
-        mother = cleaned_data.get('mother')
 
-        # Ensure at least one parent is provided
-        if not father and not mother:
-            raise forms.ValidationError('A family member must have at least one parent.')
+class PersonForm(forms.ModelForm):
+    class Meta:
+        model = Person
+        fields = ['first_name', 'last_name', 'birth_date', 'gender']
 
-        return cleaned_data
+
+class PersonRelationshipForm(forms.ModelForm):
+    class Meta:
+        model = PersonRelationship
+        fields = ['from_person', 'to_person', 'relationship_type']
+
+    def __init__(self, *args, **kwargs):
+        tree = kwargs.pop('tree', None)
+        super().__init__(*args, **kwargs)
+        if tree:
+            self.fields['from_person'].queryset = tree.members.all()
+            self.fields['to_person'].queryset = tree.members.all()

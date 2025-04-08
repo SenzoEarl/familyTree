@@ -1,68 +1,58 @@
-from main.models import *
-
-
 # familytree/utils.py
 
+from .models import *
+
+
 def get_extended_family(member):
-    """Returns extended family as dict."""
     tree = {
         'self': member,
         'parents': [],
-        'siblings': [],
         'children': [],
-        'spouse': None,
+        'siblings': [],
+        'spouse': [],
         'grandparents': [],
         'aunts_uncles': [],
         'cousins': [],
     }
 
-    # Parents
-    parents = Relationship.objects.filter(from_member=member, relation_type__in=['father', 'mother']).values_list(
-        'to_member', flat=True)
-    tree['parents'] = FamilyMember.objects.filter(id__in=parents)
+    def related(from_member, relation_type):
+        return FamilyMember.objects.filter(
+            pk__in=Relationship.objects.filter(from_member=from_member, relation_type=relation_type)
+            .values_list('to_member', flat=True)
+        )
 
-    # Children
-    children = Relationship.objects.filter(from_member=member, relation_type='child').values_list('to_member',
-                                                                                                  flat=True)
-    tree['children'] = FamilyMember.objects.filter(id__in=children)
+    tree['parents'] = list(related(member, 'father')) + list(related(member, 'mother'))
+    tree['children'] = list(related(member, 'child'))
+    tree['spouse'] = list(related(member, 'spouse'))
 
-    # Spouse
-    spouse_rel = Relationship.objects.filter(from_member=member, relation_type='spouse').first()
-    tree['spouse'] = spouse_rel.to_member if spouse_rel else None
+    # Siblings
+    siblings = set()
+    for p in tree['parents']:
+        children = related(p, 'child')
+        for child in children:
+            if child != member:
+                siblings.add(child)
+    tree['siblings'] = list(siblings)
 
-    # Siblings (shared parents)
-    sibling_ids = set()
-    for parent in tree['parents']:
-        siblings = Relationship.objects.filter(from_member=parent, relation_type='child').exclude(to_member=member)
-        for s in siblings:
-            sibling_ids.add(s.to_member.id)
-    tree['siblings'] = FamilyMember.objects.filter(id__in=sibling_ids)
+    # Grandparents
+    grandparents = set()
+    for p in tree['parents']:
+        grandparents |= set(related(p, 'father')) | set(related(p, 'mother'))
+    tree['grandparents'] = list(grandparents)
 
-    # Grandparents (parents of parents)
-    grandparent_ids = set()
-    for parent in tree['parents']:
-        grand_rels = Relationship.objects.filter(from_member=parent, relation_type__in=['father', 'mother'])
-        for rel in grand_rels:
-            grandparent_ids.add(rel.to_member.id)
-    tree['grandparents'] = FamilyMember.objects.filter(id__in=grandparent_ids)
+    # Aunts and uncles
+    aunts_uncles = set()
+    for gp in tree['grandparents']:
+        children = related(gp, 'child')
+        for child in children:
+            if child not in tree['parents']:
+                aunts_uncles.add(child)
+    tree['aunts_uncles'] = list(aunts_uncles)
 
-    # Aunts/Uncles = siblings of parents
-    aunt_uncle_ids = set()
-    for parent in tree['parents']:
-        parent_parents = Relationship.objects.filter(from_member=parent, relation_type__in=['father', 'mother'])
-        for gp in parent_parents:
-            siblings = Relationship.objects.filter(from_member=gp.to_member, relation_type='child').exclude(
-                to_member=parent)
-            for rel in siblings:
-                aunt_uncle_ids.add(rel.to_member.id)
-    tree['aunts_uncles'] = FamilyMember.objects.filter(id__in=aunt_uncle_ids)
-
-    # Cousins = children of aunts/uncles
-    cousin_ids = set()
+    # Cousins
+    cousins = set()
     for au in tree['aunts_uncles']:
-        cousin_rels = Relationship.objects.filter(from_member=au, relation_type='child')
-        for rel in cousin_rels:
-            cousin_ids.add(rel.to_member.id)
-    tree['cousins'] = FamilyMember.objects.filter(id__in=cousin_ids)
+        cousins |= set(related(au, 'child'))
+    tree['cousins'] = list(cousins)
 
     return tree
